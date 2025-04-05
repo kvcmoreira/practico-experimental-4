@@ -8,11 +8,11 @@ class Program
         // Base de datos simulada de vuelos: origen, destino, precio
         var vuelos = new List<(string origen, string destino, int precio)>
         {
-            ("CDMX", "GDL", 800),
-            ("GDL", "MTY", 600),
-            ("CDMX", "MTY", 1200),
-            ("MTY", "CUN", 1500),
-            ("GDL", "CUN", 1400)
+            ("Cuenca", "Guayaquil", 800),
+            ("Guayaquil", "Manta", 600),
+            ("Quito", "Galapagos", 1200),
+            ("Quito ", "Lago Agrio", 500),
+            ("Latacunga", "Coca", 800)
         };
 
         // Construir el grafo como diccionario
