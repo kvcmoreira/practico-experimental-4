@@ -1,0 +1,107 @@
+using System;
+using System.Collections.Generic;
+
+class Program
+{
+    static void Main()
+    {
+        // Base de datos simulada de vuelos: origen, destino, precio
+        var vuelos = new List<(string origen, string destino, int precio)>
+        {
+            ("CDMX", "GDL", 800),
+            ("GDL", "MTY", 600),
+            ("CDMX", "MTY", 1200),
+            ("MTY", "CUN", 1500),
+            ("GDL", "CUN", 1400)
+        };
+
+        // Construir el grafo como diccionario
+        var grafo = new Dictionary<string, List<(string destino, int precio)>>();
+
+        foreach (var vuelo in vuelos)
+        {
+            if (!grafo.ContainsKey(vuelo.origen))
+                grafo[vuelo.origen] = new List<(string, int)>();
+
+            grafo[vuelo.origen].Add((vuelo.destino, vuelo.precio));
+        }
+
+        // Leer entrada del usuario
+        Console.Write("Ingresa la ciudad de origen: ");
+        string origen = Console.ReadLine().ToUpper();
+        Console.Write("Ingresa la ciudad de destino: ");
+        string destino = Console.ReadLine().ToUpper();
+
+        // Ejecutar Dijkstra
+        var (camino, costoTotal) = Dijkstra(grafo, origen, destino);
+
+        if (camino.Count > 0)
+        {
+            Console.WriteLine($"\n📍 Ruta más barata: {string.Join(" ➝ ", camino)}");
+            Console.WriteLine($"💰 Costo total: ${costoTotal}");
+        }
+        else
+        {
+            Console.WriteLine("❌ No hay ruta disponible entre esas ciudades.");
+        }
+    }
+
+    static (List<string>, int) Dijkstra(Dictionary<string, List<(string destino, int precio)>> grafo, string inicio, string fin)
+    {
+        var distancias = new Dictionary<string, int>();
+        var anteriores = new Dictionary<string, string>();
+        var visitados = new HashSet<string>();
+        var cola = new PriorityQueue<string, int>();
+
+        // Inicializar distancias
+        foreach (var nodo in grafo.Keys)
+            distancias[nodo] = int.MaxValue;
+
+        distancias[inicio] = 0;
+        cola.Enqueue(inicio, 0);
+
+        while (cola.Count > 0)
+        {
+            string actual = cola.Dequeue();
+
+            if (visitados.Contains(actual))
+                continue;
+
+            visitados.Add(actual);
+
+            if (!grafo.ContainsKey(actual))
+                continue;
+
+            foreach (var (vecino, precio) in grafo[actual])
+            {
+                int nuevaDistancia = distancias[actual] + precio;
+                if (!distancias.ContainsKey(vecino) || nuevaDistancia < distancias[vecino])
+                {
+                    distancias[vecino] = nuevaDistancia;
+                    anteriores[vecino] = actual;
+                    cola.Enqueue(vecino, nuevaDistancia);
+                }
+            }
+        }
+
+        // Reconstruir el camino
+        var camino = new List<string>();
+        string nodoActual = fin;
+
+        if (!anteriores.ContainsKey(nodoActual) && inicio != fin)
+            return (camino, 0); // No hay ruta
+
+        while (nodoActual != null)
+        {
+            camino.Insert(0, nodoActual);
+            anteriores.TryGetValue(nodoActual, out nodoActual);
+            if (nodoActual == inicio)
+            {
+                camino.Insert(0, inicio);
+                break;
+            }
+        }
+
+        return (camino, distancias.ContainsKey(fin) ? distancias[fin] : 0);
+    }
+}
